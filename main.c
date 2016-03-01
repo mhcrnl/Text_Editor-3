@@ -31,7 +31,18 @@ typedef struct cursor_s {			/* For easier handling of the cursor */
 } Cursor;
 
 /* #################################################################### */
-/* Functions								*/
+/* Utility Functions							*/
+/* #################################################################### */
+
+int _strlen( char *str ) {
+	int len = 0;
+	while( str[len] )
+		len++;
+	return len;
+}
+
+/* #################################################################### */
+/* Editor Functions							*/
 /* #################################################################### */
 
 Line *createEmptyLine( ) {
@@ -54,6 +65,8 @@ void charAdded( Text *text, char c ) {
 	text->current_line->content[text->cursor_index_in_line] = c;
 	text->current_line->content[text->cursor_index_in_line + 1] = '\0';
 	if( ++text->cursor_index_in_line == MAX_WIDTH ) {
+		text->current_line->content[text->cursor_index_in_line] = '\n';
+		text->current_line->content[text->cursor_index_in_line + 1] = '\0';
 		text->cursor_index_in_line = 0;
 		Line *temp_line = createEmptyLine( );
 		temp_line->prev = text->current_line;
@@ -62,7 +75,8 @@ void charAdded( Text *text, char c ) {
 			text->last_line = temp_line;
 		if( text->current_line == text->display_bottom_line )
 			text->display_bottom_line = text->display_bottom_line->next;
-		if( ++text->num_display_lines > MAX_HEIGHT )
+		text->num_display_lines++;
+		if( text->num_display_lines > MAX_HEIGHT )
 			text->display_top_line = text->display_top_line->next;
 		text->current_line = temp_line;
 	}
@@ -79,10 +93,82 @@ void newlineAdded( Text *text ) {
 		text->last_line = temp_line;
 	if( text->current_line == text->display_bottom_line )
 		text->display_bottom_line = text->display_bottom_line->next;
-	if( ++text->num_display_lines > MAX_HEIGHT )
+	text->num_display_lines++;
+	if( text->num_display_lines > MAX_HEIGHT )
 		text->display_top_line = text->display_top_line->next;
 	text->current_line = temp_line;
 }
+
+void backspaceAdded( Text *text ) {
+	if( text->cursor_index_in_line == 0 ) {
+		/* TO BE DONE: Add support for backspace to previous line */
+	}
+	else {
+		
+	}
+}
+
+void moveUp( Text *text ) {
+	Cursor cursor;
+	int len;
+	getyx( stdscr, cursor.y, cursor.x );
+	move( cursor.y - 1, cursor.x );
+	if( text->current_line == text->first_line )
+		return;
+	else if ( text->current_line == text->display_top_line ) {
+		text->display_top_line = text->display_top_line->prev;
+		text->num_display_lines++;
+		if( text->num_display_lines > MAX_HEIGHT ) {
+			text->display_bottom_line = text->display_bottom_line->prev;
+		}
+		text->current_line = text->current_line->prev;
+		len = _strlen( text->current_line->content );
+		if( len < text->cursor_index_in_line )
+			text->cursor_index_in_line = len;
+	}
+	else
+		text->current_line = text->current_line->prev;
+		len = _strlen( text->current_line->content );
+		if( len < text->cursor_index_in_line )
+			text->cursor_index_in_line = len;
+}
+
+void moveDown( Text *text ) {
+	Cursor cursor;
+	int len;
+	getyx( stdscr, cursor.y, cursor.x );
+	move( cursor.y - 1, cursor.x );
+	if( text->current_line == text->last_line )
+		return;
+	else if ( text->current_line == text->display_bottom_line ) {
+		text->display_bottom_line = text->display_bottom_line->next;
+		text->num_display_lines++;
+		if( text->num_display_lines > MAX_HEIGHT ) {
+			text->display_top_line = text->display_top_line->next;
+		}
+		text->current_line = text->current_line->next;
+		len = _strlen( text->current_line->content );
+		if( len < text->cursor_index_in_line )
+			text->cursor_index_in_line = len;
+	}
+	else
+		text->current_line = text->current_line->next;
+		len = _strlen( text->current_line->content );
+		if( len < text->cursor_index_in_line )
+			text->cursor_index_in_line = len;
+}
+
+void moveLeft( Text *text ) {
+
+}
+
+void moveRight( Text *text ) {
+
+}
+
+/* #################################################################### */
+/* Display Functions							*/
+/* #################################################################### */
 
 void clearDisplay( ) {
 	int row = 0, col = 0;
@@ -103,9 +189,14 @@ void updateDisplay( Text *text ) {
 	printw( "%s", line->content );
 }
 
+/* #################################################################### */
+/* Main									*/
+/* #################################################################### */
+
 int main( ) {
-	char input_char, exit_flag;
+	int input_char, exit_flag, change_flag;
 	Text *text = createEmptyText();
+	Cursor cursor;
 
 	initscr();
 	raw();
@@ -115,26 +206,45 @@ int main( ) {
 	exit_flag = 0;
 
 	while( 1 ) {
+		change_flag = 0;
+
 		input_char = getch( );
 		switch( input_char ) {
+			case KEY_UP:
+				moveUp( text );
+				break;
+			case KEY_DOWN:
+				moveDown( text );
+				break;
+			case KEY_LEFT:
+				moveLeft( text );
+				break;
+			case KEY_RIGHT:
+				moveRight( text );
+				break;
 			case 27:
 				exit_flag = 1;
 				break;
 			case 10:
 				newlineAdded( text );
+				change_flag = 1;
 				break;
-/*			case 127:
+			case 127:
 				backspaceAdded( text );
-*/			default :
+				change_flag = 1;
+			default :
 				charAdded( text, input_char );
+				change_flag = 1;
 		}
 
 		if( exit_flag )
 			break;
 
-		clearDisplay( );
-		updateDisplay( text );
-		refresh();
+		if( change_flag ) {
+			clearDisplay( );
+			updateDisplay( text );
+			refresh();
+		}
 	}
 
 	endwin();
