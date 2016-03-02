@@ -117,8 +117,8 @@ void addNewline( Text *text, Cursor *cursor ) {
         else {
                 if( text->cursor_x == text->current_line->length ) {
                         text->current_line->content[text->cursor_x] = '\n';
-                        text->current_line->length++;
-                        text->current_line->content[text->current_line->length] = '\0';
+                        text->current_line->length;
+                        text->current_line->content[text->current_line->length + 1] = '\0';
                         
                         Line *temp_line = createEmptyLine( );
                         temp_line->prev = text->current_line;
@@ -169,6 +169,7 @@ void addNewline( Text *text, Cursor *cursor ) {
                         }
                         
                         int temp_index = text->cursor_x;
+                        temp_line->length = 0;
                         while( temp_index < text->current_line->length ) {
                                 temp_line->content[temp_line->length] = text->current_line->content[temp_index];
                                 temp_index++;
@@ -176,10 +177,11 @@ void addNewline( Text *text, Cursor *cursor ) {
                         }
                         text->current_line->content[text->cursor_x] = '\n';
                         text->current_line->content[text->cursor_x + 1] = '\0';
+                        text->current_line->length = text->cursor_x;
                         
-                        text->current_line = temp_line;
                         temp_line->content[temp_line->length] = '\0';
-                        
+                        text->current_line = temp_line;
+                          
                         text->cursor_x = 0;
                         cursor->x = 0;
                         
@@ -188,12 +190,12 @@ void addNewline( Text *text, Cursor *cursor ) {
                                 cursor->y--;
                 }
         }
-        
+        /*
         text->current_line->content[text->cursor_x] = '\n';
         text->current_line->length++;
         text->current_line->content[text->current_line->length];
         text->cursor_x = 0;
-
+*/
         
 }
 
@@ -227,6 +229,25 @@ void addBackspace( Text *text, Cursor *cursor ) {
                                 temp_index++;
                         }
                         text->current_line->length--;
+                        
+                        cursor->x--;
+                }
+        }
+}
+
+void addTab( Text *text, Cursor *cursor, int tab_chars ) {
+        if( text->cursor_x >= ( MAX_WIDTH / tab_chars ) * tab_chars ) {
+                
+        }
+        else {
+                if( text->cursor_x % tab_chars == 0 ) {
+                        int i;
+                        for( i = 0; i < tab_chars; i++ )
+                                addChar( text, cursor, ' ' );
+                }
+                else {
+                        while( text->cursor_x % tab_chars != 0 )
+                                addChar( text, cursor, ' ' );
                 }
         }
 }
@@ -244,44 +265,138 @@ void moveUp( Text *text, Cursor *cursor ) {
                 text->current_line = text->current_line->prev;
                 if( col > text->current_line->length ) {
                         text->cursor_x = text->current_line->length;
-                        move( row - 1, text->current_line->length );
                         
-                        cursor->y--;
-                        cursor->x = text->current_line->length;
+                        if( cursor->y < MAX_HEIGHT ) {
+                                move( row - 1, text->current_line->length );
+                                cursor->y--;
+                                cursor->x = text->current_line->length;
+                        }
                 }
                 else {
-                        move( row - 1, col );
-                        
-                        cursor->y--;
+                        if( cursor->y < MAX_HEIGHT ) {
+                                move( row - 1, col );
+                                cursor->y--;
+                        }
                 }
+                
+                if( cursor->y < 0 )
+                        cursor->y++;
         }
         else {
                 text->current_line = text->current_line->prev;
                 if( col > text->current_line->length ) {
                         text->cursor_x = text->current_line->length;
-                        move( row - 1, text->current_line->length );
                         
-                        cursor->y--;
-                        cursor->x = text->current_line->length;
+                        if( cursor->y < MAX_HEIGHT ) {
+                                move( row - 1, text->current_line->length );
+                                cursor->y--;
+                                cursor->x = text->current_line->length;
+                        }
                 }
                 else {
-                        move( row - 1, col );
-                        
-                        cursor->y--;
+                        if( cursor->y < MAX_HEIGHT ) {
+                                move( row - 1, col );
+                                cursor->y--;
+                        }
                 }
+        }
+        
+        if( text->current_line->content[text->cursor_x - 1] == '\n' ) {
+                getyx( stdscr, row, col );
+                move( row, col - 1 );
+                cursor->x--;
+                text->cursor_x--;
         }
 }
 
-void moveDown( Text *text ) {
+void moveDown( Text *text, Cursor *cursor ) {
+        int row, col;
+        getyx( stdscr, row, col );
+
+        if( text->current_line == text->last_line )
+                return;
+        else if ( text->current_line == text->display_bottom_line ) {
+                text->display_bottom_line = text->display_bottom_line->next;
+                text->num_display_lines++;
+                if( text->num_display_lines > MAX_HEIGHT )
+                        text->display_top_line = text->display_top_line->next;
+                text->current_line = text->current_line->next;
+                if( col > text->current_line->length ) {
+                        text->cursor_x = text->current_line->length;
+                        
+                        if( cursor->y < MAX_HEIGHT ) {
+                                move( row + 1, text->current_line->length );
+                                cursor->y++;
+                                cursor->x = text->current_line->length;
+                        }
+                }
+                else {
+                       if( cursor->y < MAX_HEIGHT ) {
+                                move( row + 1, col );
+                                cursor->y++;
+                        }
+                }
+        }
+        else {
+                text->current_line = text->current_line->next;
+                if( col > text->current_line->length ) {
+                        text->cursor_x = text->current_line->length;
+                        
+                        if( cursor->y < MAX_HEIGHT ) {
+                                move( row + 1, text->current_line->length );
+                                cursor->y++;
+                                cursor->x = text->current_line->length;
+                        }
+                }
+                else {
+                        if( cursor->y < MAX_HEIGHT ) {
+                                move( row + 1, col );
+                                cursor->y++;
+                        }
+                }
+        }
         
+        if( text->current_line->content[text->cursor_x - 1] == '\n' ) {
+                getyx( stdscr, row, col );
+                move( row, col - 1 );
+                cursor->x--;
+                text->cursor_x--;
+        }
 }
 
-void moveLeft( Text *text ) {
-        
+void moveLeft( Text *text, Cursor *cursor ) {
+        int row, col;
+        getyx( stdscr, row, col );
+
+        if( text->cursor_x == 0 ){
+                
+        }
+        else {
+                cursor->x--;
+                text->cursor_x--;
+                move( row, col - 1 );
+        }
 }
 
-void moveRight( Text *text ) {
+void moveRight( Text *text, Cursor *cursor ) {
+        int row, col;
+        getyx( stdscr, row, col );
         
+        if( text->cursor_x == text->current_line->length ) {
+                
+        }
+        else {
+                cursor->x++;
+                text->cursor_x++;
+                move( row, col + 1 );
+        }
+
+        if( text->current_line->content[text->cursor_x - 1] == '\n' ) {
+                getyx( stdscr, row, col );
+                move( row, col - 1 );
+                cursor->x--;
+                text->cursor_x--;
+        }
 }
 
 /* #################################################################################### */
@@ -322,6 +437,9 @@ int main() {
         Cursor cursor;
         cursor.x = cursor.y = 0;
 
+        int tab_chars = 8;
+        int iterator;
+        
         initscr();
         raw();
         noecho();
@@ -346,10 +464,17 @@ int main() {
                                 moveUp( text, &cursor );
                                 break;
                         case KEY_DOWN:
+                                moveDown( text, &cursor );
                                 break;
                         case KEY_LEFT:
+                                moveLeft( text, &cursor );
                                 break;
                         case KEY_RIGHT:
+                                moveRight( text, &cursor );
+                                break;
+                        case 9:
+                                addTab( text, &cursor, tab_chars );
+                                edit_flag = 1;
                                 break;
                         case 10:                /* Newline */
                                 addNewline( text, &cursor );
