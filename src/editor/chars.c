@@ -4,6 +4,7 @@
 
 #include "editor/chars.h"
 #include "editor/cursor.h"
+#include "editor/utility.h"
 
 /* #################################################################### */
 /*			IMPLEMENTATION FUNCTIONS			*/

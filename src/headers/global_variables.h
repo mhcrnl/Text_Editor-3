@@ -2,29 +2,18 @@
 /*			HEADER GUARDS					*/
 /* #################################################################### */
 
-#ifndef _EDITOR_UTILITY_H_
-#define _EDITOR_UTILITY_H_
+#ifndef _GLOBAL_VARIABLES_H_
+#define _GLOBAL_VARIABLES_H_
 
 /* #################################################################### */
-/*			REQUIRED INCLUDES				*/
+/*			VARIABLES					*/
 /* #################################################################### */
 
-#include <stdlib.h>
-
-#include "editor/structs.h"
-
-/* #################################################################### */
-/*			INTERFACE FUNCTIONS				*/
-/* #################################################################### */
-
-void clearNode( Node *n );
-
-void clearLine( Line *l );
-
-void clearText( Text *t );
+extern int	SCREEN_HEIGHT;
+extern int	SCREEN_WIDTH;
 
 /* #################################################################### */
-/*			END HEADER					*/
+/*			HEADER END					*/
 /* #################################################################### */
 
 #endif

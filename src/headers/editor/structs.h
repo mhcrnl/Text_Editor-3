@@ -28,6 +28,11 @@ typedef struct text_s {
 	Node	*cur_n;		/* Current node */
 } Text;
 
+typedef struct {
+	int	x;
+	int	y;
+} Cursor;
+
 /* #################################################################### */
 /*			INTERFACE FUNCTIONS				*/
 /* #################################################################### */
