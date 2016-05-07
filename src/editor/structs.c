@@ -25,6 +25,7 @@ Line *createLine( int linum ) {
 	l->linum = linum;
 	l->head = createNode( '\n' );
 	l->next = NULL;
+	l->prev = NULL;
 	return l;
 }
 
@@ -34,6 +35,9 @@ Line *insertLineAfter( Line *l ) {
 	new->linum = l->linum + 1;
 	new->head = createNode( '\n' );
 	new->next = l->next;
+	new->prev = l;
+	if( l->next )
+		l->next->prev = new;
 	l->next = new;
 
 	Line *tmp = new->next;

@@ -19,6 +19,7 @@ typedef struct line_s {
 	int		linum;		/* Line number */
 	Node		*head;		/* First character of the line */
 	struct line_s	*next;		/* Next line */
+	struct line_s	*prev;		/* Previous line */
 } Line;
 
 typedef struct text_s {

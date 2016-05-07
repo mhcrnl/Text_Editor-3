@@ -22,11 +22,44 @@ void scrollDown( Text *t, Cursor *cursor ) {
 /* #################################################################### */
 
 void moveUp( Text *t, Cursor *cursor ) {
-
+	Line *l = t->cur_l;
+	if( l == t->first )	/* If this is the first line */
+		return;
+	else {
+		cursor->y--;
+		if( cursor->y < 0 ) {
+			scrollUp( t, cursor );
+		}
+		t->cur_l = l->prev;
+		int count = 0;
+		Node *n = l->head;
+		while( n && count < cursor->x ) {
+			n = n->next;
+		}
+		t->cur_n = n;
+		cursor->x = count;
+		move( cursor->y, cursor->x );	}
 }
 
 void moveDown( Text *t, Cursor *cursor ) {
-
+	Line *l = t->cur_l;
+	if( l->next == NULL )	/* If this is the last line */
+		return;
+	else {
+		cursor->y++;
+		if( cursor->y >= SCREEN_HEIGHT ) {
+			scrollDown( t, cursor );
+		}
+		t->cur_l = l->next;
+		int count = 0;
+		Node *n = l->head;
+		while( n && n->c != '\n' && count < cursor->x ) {
+			n = n->next;
+		}
+		t->cur_n = n;
+		cursor->x = count;
+		move( cursor->y, cursor->x );
+	}
 }
 
 void moveRight( Text *t, Cursor *cursor ) {

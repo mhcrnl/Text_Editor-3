@@ -52,6 +52,7 @@ void updateDisplay( Text *t, Cursor *cursor ) {
 		l = l->next;
 		if( l == NULL )
 			break;
+		n = l->head;
 	}
 	move( cursor->y, cursor->x );
 }
