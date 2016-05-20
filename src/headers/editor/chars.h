@@ -1,27 +1,13 @@
-/* #################################################################### */
-/*			HEADER GUARDS					*/
-/* #################################################################### */
+// Functions for the manipulations of text in the text editor
 
-#ifndef	_EDITOR_CHARS_H_
+#ifndef _EDITOR_CHARS_H_
 #define _EDITOR_CHARS_H_
-
-/* #################################################################### */
-/*			REQUIRED HEADERS				*/
-/* #################################################################### */
 
 #include "editor/structs.h"
 
-/* #################################################################### */
-/*			INTERFACE FUNCTIONS				*/
-/* #################################################################### */
-
-void addChar( Text *t, Cursor *cursor, char c );
-void addNewline( Text *t, Cursor *cursor );
-void addBackspace( Text *t, Cursor *cursor );
-void addTab( Text *t, Cursor *cursor );
-
-/* #################################################################### */
-/*			HEADER END					*/
-/* #################################################################### */
+int addChar( Text *t, Cursor *cursor, char c );
+int addNewline( Text *t, Cursor *cursor );
+int addBackspace( Text *t, Cursor *cursor );
+int addTab( Text *t, Cursor *cursor );
 
 #endif

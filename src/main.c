@@ -1,78 +1,94 @@
-#include <ncurses.h>
+// Project-defined headers
+#include <stdlib.h>
 
 #include "editor/structs.h"
+#include "editor/global_variables.h"
+#include "editor/ncurses_interface.h"
 #include "editor/chars.h"
-#include "editor/cursor.h"
-#include "editor/display.h"
-#include "editor/utility.h"
+#include "display/display.h"
 
+int	SCREEN_WIDTH;
+int	SCREEN_HEIGHT;
+int	FRAME_WIDTH;
 
-int	SCREEN_HEIGHT = 25;
-int	SCREEN_WIDTH = 80;
-
-int main() {
-	int ch, exit_flag, edit_flag;
+// Starting point of program
+int main( int argc, char *argv[] ) {
+	// Variables
+	int exit_flag, edit_flag, exit_status;
+	int ch;
 	Text *t = createText( );
-	Cursor cursor;
-	cursor.x = 0;
-	cursor.y = 0;
+	Cursor *cursor = ( Cursor* ) malloc( sizeof( Cursor ) );
+	cursor->linum = 1;
+	cursor->node_num = 0;
 
-	initscr( );
-	raw( );
-	noecho( );
-	keypad( stdscr, TRUE );
+	// Start ncurses screen with required options
+	initNcurses( );
+	getDimensions( );
+	FRAME_WIDTH = 3;
 
-	getmaxyx( stdscr, SCREEN_HEIGHT, SCREEN_WIDTH );
-
+	// Initialize exit and edit flags to 0
 	exit_flag = 0;
+	edit_flag = 0;
 
+	// Draw empty frame
+	updateDisplay( t, cursor, "window" );
+
+	// Start infinite loop which accepts character then processes what to do with it
 	while( 1 ) {
+		// Reset the edit flag
+		edit_flag = 1;
+		
+		// Get the key typed
 		ch = getch( );
+
+		// Switch for the different cases
 		switch( ch ) {
-			case 27:			/* Escape key */
-				exit_flag = 1;
-				break;
-			case 127:			/* Backspace key */
-				addBackspace( t, &cursor );
-				edit_flag = 1;
-				break;
-			case 10:			/* Enter key */
-				addNewline( t, &cursor );
-				edit_flag = 1;
-				break;
-			case 9:				/* TAB key */
-				addTab( t, &cursor );
-				edit_flag = 1;
-				break;
+			// Movement/Arrow keys
 			case KEY_UP:
-				moveUp( t, &cursor );
 				break;
 			case KEY_DOWN:
-				moveDown( t, &cursor );
 				break;
 			case KEY_LEFT:
-				moveLeft( t, &cursor );
 				break;
 			case KEY_RIGHT:
-				moveRight( t, &cursor );
 				break;
+
+			// TAB key
+			case 9:
+				break;
+
+			// Newline (Return key)
+			case 10:
+				break;
+
+			// Backspace key
+			case 127:
+				break;
+
+			// Escape key
+			case 27:
+				exit_flag = 1;
+				break;
+
+			// Default (any other key)
 			default:
-				addChar( t, &cursor, ch );
+				addChar( t, cursor, ch );
 				edit_flag = 1;
 				break;
 		}
-		if( exit_flag == 1 )
+		// Check if we need to exit
+		if( exit_flag == 1 ) {
+			exit_status = 0;
 			break;
+		}
+
+		// Check if the text itself has been edited
 		if( edit_flag == 1 ) {
-			clearDisplay( );
-			updateDisplay( t, &cursor );
-			refresh( );
+			getDimensions( );
+			updateDisplay( t, cursor, "window" );
 		}
 	}
 
-	endwin( );
-
-	clearText( t );
-
-	return 0;
+	endNcurses( );
+	return exit_status;
 }

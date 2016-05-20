@@ -1,53 +1,44 @@
-# #######################################################
-# OVERALL CONFIG
-# #######################################################
 # C compiler
 CC := gcc
+
 # Libraries
 LIBS := -lncurses
-# Compiler flags
-CFLAGS := -g
 
-# #######################################################
-# DIRECTORY CONFIG
-# #######################################################
+# Include directory
+INCLUDE := -Iheaders
 
-EDITOR_DIR := editor/
-HEADER_DIR := headers/
+# Code directory
+CODE := code
 
-# #######################################################
-# OBJECTS
-# #######################################################
+# Editor source directory
+EDITOR := editor
 
-MAIN := main.o
+# Display source directory
+DISPLAY := display
+
 EDITOR_OBJS := \
-$(EDITOR_DIR)chars.o \
-$(EDITOR_DIR)cursor.o \
-$(EDITOR_DIR)display.o \
-$(EDITOR_DIR)structs.o \
-$(EDITOR_DIR)utility.o \
+main.o \
+$(CODE)/$(EDITOR)/structs.o \
+$(CODE)/$(EDITOR)/chars.o \
+$(CODE)/$(EDITOR)/ncurses_interface.o \
+$(CODE)/$(DISPLAY)/display.o \
 
-OBJS := $(MAIN) $(EDITOR_OBJS)
+OBJS := \
+$(EDITOR_OBJS) \
 
-# #######################################################
-# OUTPUT FILE NAME
-# #######################################################
+# Output file name
+OUT_FILE := editor.o
 
-OUT_FILE := text_edit.out
-
-# #######################################################
-# TARGETS
-# #######################################################
+# Targets
+all : editor
 
 .PHONY : all clean
 
-all : $(OUT_FILE)
-
-$(OUT_FILE) : $(OBJS)
-	$(CC) -o $@ -I$(HEADER_DIR) $(OBJS) $(LIBS) $(CFLAGS)
-
 clean :
-	rm -f $(OBJS) $(OUT_FILE)
+	rm $(OBJS) $(OUT_FILE)
+
+editor: $(OBJS)
+	$(CC) $(OBJS) -g -o $(OUT_FILE) $(LIBS)
 
 %.o : %.c
-	$(CC) -c $< -o $@ -I$(HEADER_DIR) $(CFLAGS)
+	$(CC) -c $< -g -o $@ $(INCLUDE)
